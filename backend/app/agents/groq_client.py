@@ -9,14 +9,14 @@ try:
 except ImportError:
     GROQ_AVAILABLE = False
 
-DEFAULT_MODEL = "gemma2-9b-it"
+DEFAULT_MODEL = "llama-3.3-70b-versatile"
 ADVANCED_MODEL = "llama-3.3-70b-versatile"
 
 def get_groq_client(api_key: Optional[str] = None) -> Optional[Any]:
     key = api_key or os.getenv("GROQ_API_KEY")
-    if GROQ_AVAILABLE and key:
+    if key and key.strip() and key.strip() != "your_groq_api_key_here" and GROQ_AVAILABLE:
         try:
-            return Groq(api_key=key)
+            return Groq(api_key=key.strip())
         except Exception as e:
             print(f"Error initializing Groq client: {e}")
     return None
@@ -222,15 +222,18 @@ Respond concisely, accurately, and professionally according to cGMP (21 CFR Part
         except Exception as e:
             print(f"Groq chat call failed: {e}")
 
-    # Fallback response engine
+    # Fallback response engine when Groq API key is missing or failed
     q_lower = text.lower()
+    fallback_note = "⚠️ *[Note: Real Groq API key is missing or invalid. Please add your `gsk_...` key in `backend/.env` or the header bar to unlock dynamic AI LLM chat.]*\n\n"
+    
     if "batch" in q_lower or "lot" in q_lower:
-        return f"The batch number for this complaint is **{complaint_data.get('batch_lot_number', 'N/A')}**, with manufacturing date {complaint_data.get('manufacturing_date', 'N/A')} and expiry date {complaint_data.get('expiry_date', 'N/A')}."
+        return f"{fallback_note}The batch number for this complaint is **{complaint_data.get('batch_lot_number', 'N/A')}**, with manufacturing date {complaint_data.get('manufacturing_date', 'N/A')} and expiry date {complaint_data.get('expiry_date', 'N/A')}."
     elif "severity" in q_lower or "risk" in q_lower or "priority" in q_lower:
-        return f"This complaint has been triaged with **{complaint_data.get('initial_severity', 'Major')} Severity** and **{complaint_data.get('priority', 'Medium')} Priority**. Risk Summary: {complaint_data.get('risk_summary', 'Pending complete evaluation.')}"
+        return f"{fallback_note}This complaint has been triaged with **{complaint_data.get('initial_severity', 'Major')} Severity** and **{complaint_data.get('priority', 'Medium')} Priority**. Risk Summary: {complaint_data.get('risk_summary', 'Pending complete evaluation.')}"
     elif "capa" in q_lower or "action" in q_lower or "rca" in q_lower:
-        return f"Recommended Initial Actions:\n{complaint_data.get('suggested_capa', 'Issue immediate batch quarantine and inspect retain samples.')}"
+        return f"{fallback_note}Recommended Initial Actions:\n{complaint_data.get('suggested_capa', 'Issue immediate batch quarantine and inspect retain samples.')}"
     elif "product" in q_lower or "customer" in q_lower:
-        return f"Product: **{complaint_data.get('product_name', 'N/A')}** ({complaint_data.get('product_strength_grade', 'N/A')}), Customer: **{complaint_data.get('customer_name', 'N/A')}**."
+        return f"{fallback_note}Product: **{complaint_data.get('product_name', 'N/A')}** ({complaint_data.get('product_strength_grade', 'N/A')}), Customer: **{complaint_data.get('customer_name', 'N/A')}**."
     else:
-        return f"Based on the logged complaint details for **{complaint_data.get('product_name', 'the product')}** (Batch {complaint_data.get('batch_lot_number', 'N/A')}), QA recommends following standard operating procedures (SOP-QMS-042) for complaint investigation, sample retrieval, and reporting to Quality Management."
+        return f"{fallback_note}Based on the logged complaint details for **{complaint_data.get('product_name', 'the product')}** (Batch {complaint_data.get('batch_lot_number', 'N/A')}), QA recommends following standard operating procedures (SOP-QMS-042) for complaint investigation, sample retrieval, and reporting to Quality Management."
+

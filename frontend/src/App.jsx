@@ -6,7 +6,7 @@ import { SavedComplaintsDashboard } from './components/SavedComplaintsDashboard.
 import { complaintReducer } from './store/complaintSlice.js';
 import { chatReducer } from './store/chatSlice.js';
 
-const API_BASE = window.location.origin.includes('8000') ? '' : 'http://localhost:8080';
+const API_BASE = window.location.origin.includes('8000') ? '' : 'http://localhost:8000';
 
 export function App() {
   const [complaintState, complaintDispatch] = useReducer(

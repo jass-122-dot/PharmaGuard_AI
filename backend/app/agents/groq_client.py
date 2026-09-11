@@ -9,8 +9,13 @@ try:
 except ImportError:
     GROQ_AVAILABLE = False
 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
-ADVANCED_MODEL = "llama-3.3-70b-versatile"
+CANDIDATE_MODELS = [
+    "groq/compound",
+    "groq/compound-mini",
+    "llama-3.3-70b-versatile",
+    "llama3-8b-8192",
+    "gemma2-9b-it"
+]
 
 def get_groq_client(api_key: Optional[str] = None) -> Optional[Any]:
     key = api_key or os.getenv("GROQ_API_KEY")
@@ -55,20 +60,21 @@ Rules for Severity:
 
 Return ONLY valid JSON. No preamble or markdown codeblocks outside JSON.
 """
-        try:
-            response = client.chat.completions.create(
-                model=DEFAULT_MODEL,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": text}
-                ],
-                temperature=0.1,
-                response_format={"type": "json_object"}
-            )
-            raw_json = response.choices[0].message.content
-            return json.loads(raw_json)
-        except Exception as e:
-            print(f"Groq API call failed: {e}. Falling back to rule-based parser.")
+        for model_name in CANDIDATE_MODELS:
+            try:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": text}
+                    ],
+                    temperature=0.1,
+                    response_format={"type": "json_object"}
+                )
+                raw_json = response.choices[0].message.content
+                return json.loads(raw_json)
+            except Exception as e:
+                print(f"Groq API model {model_name} failed: {e}. Trying next model...")
 
     # Rule-based fallback extractor tailored for Pharma QA
     return fallback_extract_pharma_complaint(text)
@@ -207,20 +213,23 @@ Current Complaint Context Data:
 Respond concisely, accurately, and professionally according to cGMP (21 CFR Part 211, EU GMP) standards.
 """
     if client:
-        try:
-            messages = [{"role": "system", "content": system_prompt}]
-            for msg in chat_history[-6:]:
-                messages.append({"role": msg["role"], "content": msg["content"]})
-            messages.append({"role": "user", "content": text})
+        messages = [{"role": "system", "content": system_prompt}]
+        for msg in chat_history[-6:]:
+            role = msg.get("role") or ("user" if msg.get("sender") == "user" else "assistant")
+            if role in ["user", "assistant", "system"]:
+                messages.append({"role": role, "content": msg.get("content", "")})
+        messages.append({"role": "user", "content": text})
 
-            response = client.chat.completions.create(
-                model=DEFAULT_MODEL,
-                messages=messages,
-                temperature=0.3
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            print(f"Groq chat call failed: {e}")
+        for model_name in CANDIDATE_MODELS:
+            try:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=0.3
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                print(f"Groq chat model {model_name} failed: {e}. Trying next candidate model...")
 
     # Fallback response engine when Groq API key is missing or failed
     q_lower = text.lower()
@@ -236,4 +245,5 @@ Respond concisely, accurately, and professionally according to cGMP (21 CFR Part
         return f"{fallback_note}Product: **{complaint_data.get('product_name', 'N/A')}** ({complaint_data.get('product_strength_grade', 'N/A')}), Customer: **{complaint_data.get('customer_name', 'N/A')}**."
     else:
         return f"{fallback_note}Based on the logged complaint details for **{complaint_data.get('product_name', 'the product')}** (Batch {complaint_data.get('batch_lot_number', 'N/A')}), QA recommends following standard operating procedures (SOP-QMS-042) for complaint investigation, sample retrieval, and reporting to Quality Management."
+
 

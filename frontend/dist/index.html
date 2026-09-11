@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Customer Complaint - API & FDF QA Module</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+      --card-bg: #FFFFFF;
+      --border-color: #E2E8F0;
+      --primary-blue: #2563EB;
+      --primary-gradient: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      --accent-purple: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+      --accent-emerald: linear-gradient(135deg, #059669 0%, #047857 100%);
+      --accent-rose: linear-gradient(135deg, #E11D48 0%, #BE123C 100%);
+      --accent-amber: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+      --radius-xl: 16px;
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+      --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: var(--font-family); 
+      background: var(--bg-gradient); 
+      color: #0F172A; 
+      line-height: 1.5; 
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased; 
+    }
+    .app-container { max-width: 1440px; margin: 0 auto; padding: 24px; }
+
+    /* VIBRANT HEADER */
+    .qms-header { 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: var(--radius-xl); 
+      padding: 22px 30px; 
+      margin-bottom: 24px; 
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .qms-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563EB, #7C3AED, #059669, #D97706);
+    }
+
+    .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .title-row { display: flex; align-items: center; gap: 14px; }
+    .header-title { font-size: 26px; font-weight: 800; color: #0F172A; letter-spacing: -0.03em; }
+    .header-subtitle { font-size: 14px; color: #64748B; font-weight: 600; margin-top: 2px; }
+    
+    .status-badge { 
+      font-size: 13px; 
+      font-weight: 700; 
+      padding: 5px 14px; 
+      border-radius: 9999px; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+    .status-badge.pulse { animation: badgePulse 2s infinite; }
+    @keyframes badgePulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+    .nav-tabs { display: flex; background: #F1F5F9; padding: 5px; border-radius: var(--radius-lg); }
+    .nav-tab { 
+      background: transparent; 
+      border: none; 
+      font-family: var(--font-family); 
+      font-size: 13.5px; 
+      font-weight: 700; 
+      color: #64748B; 
+      padding: 9px 18px; 
+      border-radius: var(--radius-md); 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-tab.active { 
+      background: #FFFFFF; 
+      color: #2563EB; 
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); 
+    }
+
+    .groq-key-input-wrap { 
+      display: flex; 
+      align-items: center; 
+      background: #F8FAFC; 
+      border: 1px solid #CBD5E1; 
+      border-radius: var(--radius-lg); 
+      padding: 4px 6px 4px 12px; 
+      transition: all 0.2s ease;
+    }
+    .groq-key-input-wrap:focus-within {
+      border-color: #7C3AED;
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    .groq-pill { 
+      font-size: 11px; 
+      font-weight: 800; 
+      color: #FFFFFF; 
+      background: var(--accent-purple); 
+      padding: 4px 8px; 
+      border-radius: 6px; 
+      margin-right: 8px; 
+      letter-spacing: 0.05em;
+    }
+    .groq-key-field { border: none; outline: none; background: transparent; font-size: 12px; font-family: var(--font-family); width: 170px; }
+
+    /* MAIN GRID LAYOUT */
+    .main-grid { display: grid; grid-template-columns: 1fr 490px; gap: 24px; align-items: start; }
+    @media (max-width: 1080px) { .main-grid { grid-template-columns: 1fr; } }
+
+    /* COLORFUL FORM CARD */
+    .complaint-form-card { 
+      background: var(--card-bg); 
+      border: 1px solid var(--border-color); 
+      border-radius: var(--radius-xl); 
+      padding: 30px; 
+      box-shadow: var(--shadow-lg); 
+    }
+
+    .quick-samples-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #EFF6FF 0%, #EEF2FF 100%);
+      border: 1px solid #C7D2FE;
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+    }
+    .quick-sample-title { font-size: 12px; font-weight: 800; color: #3730A3; letter-spacing: 0.03em; }
+    .quick-btn-group { display: flex; gap: 8px; }
+    .btn-quick-fill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #A5B4FC;
+      background: #FFFFFF;
+      color: #4338CA;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-quick-fill:hover {
+      background: #4338CA;
+      color: #FFFFFF;
+      transform: translateY(-1px);
+    }
+
+    .form-section { 
+      margin-bottom: 28px; 
+      background: #FAFAFA;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      border: 1px solid #F1F5F9;
+      position: relative;
+    }
+
+    .sec-1 { border-left: 4px solid #2563EB; }
+    .sec-2 { border-left: 4px solid #059669; }
+    .sec-3 { border-left: 4px solid #D97706; }
+    .sec-4 { border-left: 4px solid #7C3AED; }
+
+    .section-title { 
+      font-size: 13px; 
+      font-weight: 800; 
+      letter-spacing: 0.05em; 
+      text-transform: uppercase; 
+      margin-bottom: 16px; 
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sec-1 .section-title { color: #1D4ED8; }
+    .sec-2 .section-title { color: #047857; }
+    .sec-3 .section-title { color: #B45309; }
+    .sec-4 .section-title { color: #6D28D9; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .mt-3 { margin-top: 14px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-label { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .form-input, .form-textarea, .form-select { 
+      width: 100%; 
+      font-family: var(--font-family); 
+      font-size: 14px; 
+      color: #0F172A; 
+      background-color: #FFFFFF; 
+      border: 1px solid #CBD5E1; 
+      border-radius: var(--radius-md); 
+      padding: 11px 14px; 
+      outline: none; 
+      transition: all 0.2s ease; 
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: #94A3B8; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { 
+      border-color: #2563EB; 
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); 
+    }
+
+    /* DYNAMIC AI GLOW HIGHLIGHT */
+    .ai-highlight { 
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%) !important; 
+      border-color: #3B82F6 !important; 
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.3) !important;
+      animation: pulseGlow 1.8s infinite alternate;
+    }
+    @keyframes pulseGlow {
+      0% { border-color: #60A5FA; }
+      100% { border-color: #2563EB; }
+    }
+
+    .input-icon-wrap { position: relative; }
+    .input-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748B; font-size: 15px; pointer-events: none; }
+    .input-suffix-wrap { display: flex; }
+    .suffix-input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    .input-suffix { background: #F1F5F9; border: 1px solid #CBD5E1; border-left: none; border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); padding: 11px 14px; font-size: 14px; font-weight: 700; color: #475569; }
+    .form-textarea { resize: vertical; min-height: 105px; }
+    .select-wrap { position: relative; }
+    .form-select { appearance: none; -webkit-appearance: none; padding-right: 34px; cursor: pointer; font-weight: 600; }
+    .select-arrow { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #64748B; pointer-events: none; }
+
+    .form-actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 20px; border-top: 2px solid #F1F5F9; }
+    .btn { 
+      font-family: var(--font-family); 
+      font-size: 14px; 
+      font-weight: 700; 
+      padding: 12px 24px; 
+      border-radius: var(--radius-lg); 
+      cursor: pointer; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 8px; 
+      transition: all 0.2s ease; 
+      border: 1px solid transparent; 
+    }
+    .btn-primary { 
+      background: var(--primary-gradient); 
+      color: #FFFFFF; 
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+    }
+    .btn-outline { background-color: #FFFFFF; border-color: #CBD5E1; color: #334155; }
+    .btn-outline:hover { background-color: #F8FAFC; border-color: #94A3B8; }
+
+    /* VIBRANT RIGHT PANEL (AI ASSISTANT) */
+    .ai-assistant-panel { 
+      background: var(--card-bg); 
+      border: 1px solid var(--border-color); 
+      border-radius: var(--radius-xl); 
+      padding: 26px; 
+      box-shadow: var(--shadow-lg); 
+    }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .panel-title-wrap { display: flex; align-items: center; gap: 10px; }
+    .sparkle-icon { 
+      font-size: 20px; 
+      background: linear-gradient(135deg, #2563EB, #7C3AED);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .panel-title { font-size: 17px; font-weight: 800; color: #0F172A; }
+    .beta-badge { 
+      font-size: 11px; 
+      font-weight: 800; 
+      color: #7C3AED; 
+      background: #F3E8FF; 
+      border: 1px solid #DDD6FE; 
+      padding: 3px 10px; 
+      border-radius: 9999px; 
+    }
+
+    .drop-zone { 
+      border: 2px dashed #93C5FD; 
+      border-radius: var(--radius-lg); 
+      padding: 30px 20px; 
+      text-align: center; 
+      background: linear-gradient(180deg, #F0F7FF 0%, #FFFFFF 100%); 
+      cursor: pointer; 
+      transition: all 0.3s ease; 
+    }
+    .drop-zone:hover { 
+      border-color: #2563EB; 
+      background: #EFF6FF; 
+      transform: scale(1.01);
+      box-shadow: var(--shadow-glow);
+    }
+    .drop-icon { font-size: 36px; color: #3B82F6; margin-bottom: 8px; }
+    .drop-main-text { font-size: 14px; font-weight: 700; color: #1E293B; }
+    .drop-link-text { font-size: 13px; color: #64748B; margin-top: 2px; }
+    .link-span { color: #2563EB; font-weight: 700; text-decoration: underline; }
+
+    .divider-row { display: flex; align-items: center; margin: 18px 0; }
+    .divider-line { flex: 1; height: 1px; background: #E2E8F0; }
+    .divider-text { font-size: 11px; font-weight: 800; color: #94A3B8; padding: 0 12px; }
+
+    .btn-paste-text { 
+      width: 100%; 
+      justify-content: center; 
+      background: #FFFFFF; 
+      border: 1.5px solid #CBD5E1; 
+      color: #0F172A; 
+      padding: 12px; 
+      margin-bottom: 16px; 
+      font-weight: 700;
+      border-radius: var(--radius-lg);
+    }
+    .btn-paste-text:hover { background-color: #F8FAFC; border-color: #2563EB; color: #2563EB; }
+
+    .info-box { 
+      background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%); 
+      border: 1px solid #A7F3D0; 
+      border-radius: var(--radius-md); 
+      padding: 10px 14px; 
+      font-size: 12px; 
+      color: #047857; 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      margin-bottom: 20px; 
+      font-weight: 600;
+    }
+
+    .progress-section { margin-bottom: 20px; }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .progress-label { font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 0.05em; }
+    .progress-percent { font-size: 13px; font-weight: 800; color: #2563EB; }
+    .progress-bar-bg { height: 10px; background: #E2E8F0; border-radius: 9999px; overflow: hidden; margin-bottom: 8px; }
+    .progress-bar-fill { 
+      height: 100%; 
+      background: linear-gradient(90deg, #3B82F6, #7C3AED, #059669); 
+      border-radius: 9999px; 
+      transition: width 0.4s ease; 
+    }
+    .progress-status-text { font-size: 12px; color: #64748B; font-weight: 500; }
+
+    /* CHAT CARD & BUBBLES */
+    .ai-assistant-card { 
+      background: linear-gradient(135deg, #F0F7FF 0%, #EEF2FF 100%); 
+      border: 1px solid #C7D2FE; 
+      border-radius: var(--radius-lg); 
+      padding: 18px; 
+      margin-bottom: 16px; 
+    }
+    .ai-card-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .ai-card-icon { font-size: 18px; }
+    .ai-card-title { font-size: 11px; font-weight: 800; color: #3730A3; letter-spacing: 0.05em; }
+
+    .chat-messages-scroll { max-height: 190px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .chat-bubble { font-size: 13px; line-height: 1.5; padding: 10px 14px; border-radius: 12px; max-width: 90%; white-space: pre-wrap; font-weight: 500; }
+    .assistant-bubble { background: #FFFFFF; color: #1E293B; border: 1px solid #E2E8F0; align-self: flex-start; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .user-bubble { background: var(--primary-gradient); color: #FFFFFF; align-self: flex-end; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); }
+
+    .chat-input-form { margin-bottom: 12px; }
+    .chat-input-wrap { display: flex; align-items: center; border: 1.5px solid #CBD5E1; border-radius: var(--radius-lg); padding: 5px 6px 5px 16px; background: #FFFFFF; }
+    .chat-input-wrap:focus-within { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+    .chat-input { flex: 1; border: none; outline: none; font-family: var(--font-family); font-size: 13px; color: #0F172A; }
+    .chat-send-btn { background: var(--primary-gradient); color: #FFFFFF; border: none; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
+
+    .ai-footer-notice { font-size: 11px; color: #94A3B8; text-align: center; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal-content { background: #FFFFFF; border-radius: var(--radius-xl); width: 100%; max-width: 660px; padding: 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-title { font-size: 19px; font-weight: 800; color: #0F172A; }
+    .modal-close-btn { background: transparent; border: none; font-size: 26px; color: #94A3B8; cursor: pointer; }
+    .sample-buttons-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .sample-label { font-size: 12px; color: #64748B; font-weight: 600; }
+    .btn-sm { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: 1px solid #CBD5E1; background: #F8FAFC; color: #334155; transition: all 0.15s ease; }
+    .btn-sm:hover { background: #2563EB; color: #FFFFFF; border-color: #2563EB; }
+    
+    .btn-delete-action {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #FECDD3;
+      background: #FFE4E6;
+      color: #BE123C;
+      margin-left: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-delete-action:hover {
+      background: #E11D48;
+      color: #FFFFFF;
+      border-color: #E11D48;
+      box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
+    }
+
+    .modal-textarea { width: 100%; font-family: var(--font-family); font-size: 13px; padding: 14px; border: 1.5px solid #CBD5E1; border-radius: var(--radius-lg); outline: none; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+
+    /* COLORFUL DASHBOARD METRICS */
+    .qms-dashboard-wrap { display: flex; flex-direction: column; gap: 24px; }
+    .dashboard-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .stat-card { 
+      background: #FFFFFF; 
+      border: 1px solid var(--border-color); 
+      border-radius: var(--radius-xl); 
+      padding: 22px; 
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 5px; }
+    .total-card::after { background: #2563EB; }
+    .critical-card::after { background: #E11D48; }
+    .major-card::after { background: #D97706; }
+    .minor-card::after { background: #059669; }
+
+    .stat-value { font-size: 32px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+    .total-card .stat-value { color: #2563EB; }
+    .critical-card .stat-value { color: #E11D48; }
+    .major-card .stat-value { color: #D97706; }
+    .minor-card .stat-value { color: #059669; }
+    .stat-label { font-size: 12.5px; font-weight: 700; color: #64748B; }
+
+    .dashboard-table-card { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-xl); overflow-x: auto; box-shadow: var(--shadow-lg); }
+    .qms-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .qms-table th { background: #F8FAFC; text-align: left; padding: 14px 18px; font-weight: 800; color: #475569; border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+    .qms-table td { padding: 16px 18px; border-bottom: 1px solid #F1F5F9; }
+    
+    .sev-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 4px; }
+    .sev-critical { background: #FFE4E6; color: #BE123C; border: 1px solid #FECDD3; }
+    .sev-major { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+    .sev-minor { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Dynamic Header with Grey Color for Start Triage
+    function Header({ statusState, complaintSource, customerName, activeTab, onTabChange, groqApiKey, onApiKeyChange }) {
+      
+      const getBadgeInfo = () => {
+        if (statusState === 'Saved') {
+          return { label: 'Saved', bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE', icon: '✓' };
+        }
+        if (statusState === 'Triaged') {
+          return { label: 'Triaged', bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0', icon: '⚡' };
+        }
+
+        const isFilled = (complaintSource && complaintSource.trim().length > 0) || 
+                         (customerName && customerName.trim().length > 0);
+
+        if (isFilled) {
+          return { label: 'Pending Triage', bg: '#FEF3C7', text: '#92400E', border: '#FDE68A', icon: '⏳' };
+        }
+
+        // Cool Slate Grey Badge styling for "Start Triage"
+        return { label: 'Start Triage', bg: '#E2E8F0', text: '#334155', border: '#94A3B8', icon: '▶' };
+      };
+
+      const badge = getBadgeInfo();
+
+      return (
+        <header className="qms-header">
+          <div className="header-top">
+            <div>
+              <div className="title-row">
+                <h1 className="header-title">Log Customer Complaint</h1>
+                <span className="status-badge pulse" style={{ backgroundColor: badge.bg, color: badge.text, borderColor: badge.border }}>
+                  <span>{badge.icon}</span> {badge.label}
+                </span>
+              </div>
+              <p className="header-subtitle">API & FDF Quality Assurance Module • cGMP Compliance Engine</p>
+            </div>
+
+            <div className="header-actions">
+              <div className="nav-tabs">
+                <button className={`nav-tab ${activeTab === 'intake' ? 'active' : ''}`} onClick={() => onTabChange('intake')}>
+                  📋 Log Complaint Form
+                </button>
+                <button className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => onTabChange('dashboard')}>
+                  📊 Quality Risk Dashboard
+                </button>
+              </div>
+
+              <div className="groq-key-input-wrap">
+                <span className="groq-pill">Groq LLM</span>
+                <input
+                  type="password"
+                  className="groq-key-field"
+                  placeholder="Groq Key (gemma2-9b-it)"
+                  value={groqApiKey || ''}
+                  onChange={(e) => onApiKeyChange(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </header>
+      );
+    }
+
+    function ComplaintForm({ formState, setFormState, onSaveComplaint, onResetForm, onLoadSampleAPI, onLoadSampleFDF }) {
+      const handleChange = (field, val) => {
+        setFormState(prev => ({ ...prev, [field]: val }));
+      };
+
+      const isHl = (f) => formState.highlightedFields && formState.highlightedFields[f] ? 'ai-highlight' : '';
+
+      return (
+        <div className="complaint-form-card">
+
+          {/* QUICK DEMO FILL BUTTONS BAR */}
+          <div className="quick-samples-bar">
+            <span className="quick-sample-title">⚡ Instant Demo Autofill:</span>
+            <div className="quick-btn-group">
+              <button type="button" className="btn-quick-fill" onClick={onLoadSampleAPI}>
+                🧪 Test API (Paracetamol OOS)
+              </button>
+              <button type="button" className="btn-quick-fill" onClick={onLoadSampleFDF}>
+                💊 Test FDF (Amoxicillin Capsules)
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={(e) => { e.preventDefault(); onSaveComplaint(); }}>
+            
+            {/* 1. ORIGIN & CUSTOMER DETAILS */}
+            <div className="form-section sec-1">
+              <h2 className="section-title">🏢 1. ORIGIN & CUSTOMER DETAILS</h2>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label className="form-label">Complaint Source</label>
+                  <input type="text" className={`form-input ${isHl('complaintSource')}`} placeholder="Awaiting AI extraction..." value={formState.complaintSource || ''} onChange={(e) => handleChange('complaintSource', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Customer Name</label>
+                  <input type="text" className={`form-input ${isHl('customerName')}`} placeholder="Awaiting AI extraction..." value={formState.customerName || ''} onChange={(e) => handleChange('customerName', e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. PRODUCT & BATCH IDENTIFICATION */}
+            <div className="form-section sec-2">
+              <h2 className="section-title">📦 2. PRODUCT & BATCH IDENTIFICATION</h2>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label className="form-label">Product Name</label>
+                  <input type="text" className={`form-input ${isHl('productName')}`} placeholder="Awaiting AI extraction..." value={formState.productName || ''} onChange={(e) => handleChange('productName', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Product Strength/Grade</label>
+                  <input type="text" className={`form-input ${isHl('productStrengthGrade')}`} placeholder="Awaiting AI extraction..." value={formState.productStrengthGrade || ''} onChange={(e) => handleChange('productStrengthGrade', e.target.value)} />
+                </div>
+              </div>
+
+              <div className="grid-2 mt-3">
+                <div className="form-group">
+                  <label className="form-label">Batch/Lot Number</label>
+                  <input type="text" className={`form-input ${isHl('batchLotNumber')}`} placeholder="Awaiting AI extraction..." value={formState.batchLotNumber || ''} onChange={(e) => handleChange('batchLotNumber', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Manufacturing Date</label>
+                  <div className="input-icon-wrap">
+                    <input type="text" className={`form-input ${isHl('manufacturingDate')}`} placeholder="Awaiting AI extraction..." value={formState.manufacturingDate || ''} onChange={(e) => handleChange('manufacturingDate', e.target.value)} />
+                    <span className="input-icon">📅</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid-2 mt-3">
+                <div className="form-group">
+                  <label className="form-label">Expiry Date</label>
+                  <div className="input-icon-wrap">
+                    <input type="text" className={`form-input ${isHl('expiryDate')}`} placeholder="Awaiting AI extraction..." value={formState.expiryDate || ''} onChange={(e) => handleChange('expiryDate', e.target.value)} />
+                    <span className="input-icon">📅</span>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Quantity Affected</label>
+                  <div className="input-suffix-wrap">
+                    <input type="text" className={`form-input suffix-input ${isHl('quantityAffected')}`} placeholder="Awaiting AI extraction..." value={formState.quantityAffected || ''} onChange={(e) => handleChange('quantityAffected', e.target.value)} />
+                    <span className="input-suffix">kg</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. COMPLAINT DETAILS */}
+            <div className="form-section sec-3">
+              <h2 className="section-title">📝 3. COMPLAINT DETAILS</h2>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label className="form-label">Complaint Type</label>
+                  <input type="text" className={`form-input ${isHl('complaintType')}`} placeholder="Awaiting AI extraction..." value={formState.complaintType || ''} onChange={(e) => handleChange('complaintType', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Complaint Date</label>
+                  <div className="input-icon-wrap">
+                    <input type="text" className={`form-input ${isHl('complaintDate')}`} placeholder="Awaiting AI extraction..." value={formState.complaintDate || ''} onChange={(e) => handleChange('complaintDate', e.target.value)} />
+                    <span className="input-icon">📅</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-group mt-3">
+                <label className="form-label">Detailed Complaint Description</label>
+                <textarea className={`form-textarea ${isHl('detailedDescription')}`} rows={4} placeholder="Awaiting AI extraction..." value={formState.detailedDescription || ''} onChange={(e) => handleChange('detailedDescription', e.target.value)}></textarea>
+              </div>
+            </div>
+
+            {/* 4. INITIAL ASSESSMENT & PRIORITY */}
+            <div className="form-section sec-4">
+              <h2 className="section-title">⚖️ 4. INITIAL ASSESSMENT & PRIORITY</h2>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label className="form-label">Initial Severity</label>
+                  <div className="select-wrap">
+                    <select className={`form-select ${isHl('initialSeverity')}`} value={formState.initialSeverity || ''} onChange={(e) => handleChange('initialSeverity', e.target.value)}>
+                      <option value="">Awaiting AI extraction...</option>
+                      <option value="Critical">🔴 Critical (Sterility / Safety Risk)</option>
+                      <option value="Major">🟠 Major (OOS / Quality Standard Breach)</option>
+                      <option value="Minor">🔵 Minor (Cosmetic / Packaging Defect)</option>
+                    </select>
+                    <span className="select-arrow">∨</span>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Priority</label>
+                  <div className="select-wrap">
+                    <select className={`form-select ${isHl('priority')}`} value={formState.priority || ''} onChange={(e) => handleChange('priority', e.target.value)}>
+                      <option value="">Awaiting AI extraction...</option>
+                      <option value="High">🔥 High Priority</option>
+                      <option value="Medium">⚡ Medium Priority</option>
+                      <option value="Low">🌱 Low Priority</option>
+                    </select>
+                    <span className="select-arrow">∨</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="form-actions-row">
+              <button type="button" className="btn btn-outline" onClick={onResetForm}>
+                <span>↺</span> Reset Form
+              </button>
+              <button type="submit" className="btn btn-primary">
+                <span>💾</span> Save Complaint
+              </button>
+            </div>
+          </form>
+        </div>
+      );
+    }
+
+    function AIAssistantPanel({ progress, statusText, messages, onFileUpload, onTextSubmit, onSendChat }) {
+      const [isModal, setIsModal] = useState(false);
+      const [pasteVal, setPasteVal] = useState('');
+      const [chatVal, setChatVal] = useState('');
+      const fileRef = useRef(null);
+
+      const handlePasteSubmit = (e) => {
+        e.preventDefault();
+        if (!pasteVal.trim()) return;
+        onTextSubmit(pasteVal);
+        setIsModal(false);
+        setPasteVal('');
+      };
+
+      const loadAPI = () => {
+        setPasteVal(`COMPLAINT REPORT - API QUALITY ASSURANCE\nDate: 2026-09-08\nFrom: Apex Pharmaceuticals Ltd (Quality Control Dept)\nCustomer Contact: Dr. Robert Vance (qc@apexpharma.com)\nProduct: Paracetamol (Acetaminophen) API\nGrade/Strength: Ph. Eur. / USP Micronized Grade 99.8%\nBatch/Lot Number: LOT-2026-X891\nMfg Date: 2026-01-15 | Expiry Date: 2028-01-14\nQuantity Affected: 500 kg (in 25 fiber drums)\n\nIncident Summary:\nDuring incoming receiving inspection and HPLC assay testing at our formulation facility, Lot-2026-X891 failed total related substances specification (OOS reported at 0.45% vs limit <= 0.15%). Additionally, 3 fiber drums showed damaged inner seals. Please initiate immediate QA investigation.`);
+      };
+
+      const loadFDF = () => {
+        setPasteVal(`CUSTOMER COMPLAINT EMAIL - FINISHED DOSAGE FORM (FDF)\nDate: 2026-09-07\nFrom: Metro Central Hospital Pharmacy\nCustomer Contact: Sarah Jenkins, Chief Pharmacist (sjenkins@metrohospital.org)\nProduct Name: Amoxicillin Trihydrate 500mg Capsules\nBatch Number: BATCH-99412\nManufacturing Date: 2026-03-10 | Expiry Date: 2028-03-09\nQuantity Affected: 1,200 blister cards (12,000 capsules)\n\nDescription:\nHospital staff reported significant physical discoloration (dark yellow spots) on capsules from blister pack Lot BATCH-99412. Please log as high priority complaint and advise on replacement.`);
+      };
+
+      return (
+        <div className="ai-assistant-panel">
+          <div className="panel-header">
+            <div className="panel-title-wrap">
+              <span className="sparkle-icon">✦</span>
+              <h2 className="panel-title">AI Complaint Intake Assistant</h2>
+            </div>
+            <span className="beta-badge">BETA</span>
+          </div>
+
+          <div className="drop-zone" onClick={() => fileRef.current && fileRef.current.click()}>
+            <input type="file" ref={fileRef} style={{ display: 'none' }} accept=".pdf,.docx,.txt,.eml" onChange={(e) => e.target.files[0] && onFileUpload(e.target.files[0])} />
+            <div className="drop-icon">☁</div>
+            <p className="drop-main-text">Drag & drop complaint document here</p>
+            <p className="drop-link-text">or <span className="link-span">click to browse</span></p>
+          </div>
+
+          <div className="divider-row">
+            <span className="divider-line"></span>
+            <span className="divider-text">OR</span>
+            <span className="divider-line"></span>
+          </div>
+
+          <button className="btn btn-paste-text" onClick={() => setIsModal(true)}>
+            📄 Paste Complaint Text / Email
+          </button>
+
+          <div className="info-box">
+            <span>ⓘ</span>
+            <span>Supported formats: <strong>PDF, DOCX, TXT, EML</strong> | Max file size: 10MB</span>
+          </div>
+
+          <div className="progress-section">
+            <div className="progress-header">
+              <span className="progress-label">EXTRACTION PROGRESS</span>
+              <span className="progress-percent">{progress}%</span>
+            </div>
+            <div className="progress-bar-bg">
+              <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+            </div>
+            <p className="progress-status-text">{statusText}</p>
+          </div>
+
+          <div className="ai-assistant-card">
+            <div className="ai-card-title-row">
+              <span className="ai-card-icon">🤖</span>
+              <span className="ai-card-title">AI ASSISTANT CHAT</span>
+            </div>
+            <div className="chat-messages-scroll">
+              {messages.map((m, idx) => (
+                <div key={idx} className={`chat-bubble ${m.sender === 'user' ? 'user-bubble' : 'assistant-bubble'}`}>
+                  {m.content}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <form onSubmit={(e) => { e.preventDefault(); if(chatVal.trim()){ onSendChat(chatVal); setChatVal(''); } }} className="chat-input-form">
+            <div className="chat-input-wrap">
+              <input type="text" className="chat-input" placeholder="Ask me anything about this complaint..." value={chatVal} onChange={(e) => setChatVal(e.target.value)} />
+              <button type="submit" className="chat-send-btn" disabled={!chatVal.trim()}>✈</button>
+            </div>
+          </form>
+
+          <p className="ai-footer-notice">AI responses may contain errors. Please verify information.</p>
+
+          {isModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h3 className="modal-title">Paste Complaint Text / Email</h3>
+                  <button className="modal-close-btn" onClick={() => setIsModal(false)}>×</button>
+                </div>
+                <div className="sample-buttons-row mb-3">
+                  <span className="sample-label">Try sample text:</span>
+                  <button className="btn-sm" onClick={loadAPI}>🧪 Sample API (OOS Assay)</button>
+                  <button className="btn-sm" onClick={loadFDF}>💊 Sample FDF (Discoloration)</button>
+                </div>
+                <form onSubmit={handlePasteSubmit}>
+                  <textarea className="modal-textarea" rows={9} placeholder="Paste raw complaint text or email..." value={pasteVal} onChange={(e) => setPasteVal(e.target.value)}></textarea>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-outline" onClick={() => setIsModal(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary">⚡ Extract Complaint Details</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function SavedComplaintsDashboard({ complaints, onDeleteComplaint }) {
+      const [sel, setSel] = useState(null);
+      return (
+        <div className="qms-dashboard-wrap">
+          <div className="dashboard-stats-grid">
+            <div className="stat-card total-card">
+              <div className="stat-value">{complaints.length}</div>
+              <div className="stat-label">Total Logged Complaints</div>
+            </div>
+            <div className="stat-card critical-card">
+              <div className="stat-value">{complaints.filter(c=>c.initial_severity==='Critical').length}</div>
+              <div className="stat-label">Critical Risk (Immediate QA)</div>
+            </div>
+            <div className="stat-card major-card">
+              <div className="stat-value">{complaints.filter(c=>c.initial_severity==='Major').length}</div>
+              <div className="stat-label">Major Risk (OOS / Process)</div>
+            </div>
+            <div className="stat-card minor-card">
+              <div className="stat-value">{complaints.filter(c=>c.initial_severity==='Minor').length}</div>
+              <div className="stat-label">Minor Risk (Cosmetic)</div>
+            </div>
+          </div>
+
+          <div className="dashboard-table-card">
+            <table className="qms-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Customer</th><th>Product</th><th>Batch</th><th>Complaint Type</th><th>Severity</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {complaints.length === 0 ? (
+                  <tr><td colSpan={7} style={{textAlign:'center', padding: '24px'}}>No saved complaints in database. Use intake form above.</td></tr>
+                ) : (
+                  complaints.map(c => (
+                    <tr key={c.id}>
+                      <td><strong>#{c.id}</strong></td>
+                      <td><strong>{c.customer_name}</strong></td>
+                      <td>{c.product_name}</td>
+                      <td><code>{c.batch_lot_number}</code></td>
+                      <td>{c.complaint_type}</td>
+                      <td>
+                        <span className={`sev-badge sev-${(c.initial_severity||'major').toLowerCase()}`}>
+                          {c.initial_severity === 'Critical' ? '🔴' : c.initial_severity === 'Major' ? '🟠' : '🔵'} {c.initial_severity}
+                        </span>
+                      </td>
+                      <td>
+                        <button className="btn-sm" onClick={() => setSel(c)}>View QA Summary</button>
+                        <button className="btn-delete-action" onClick={() => onDeleteComplaint(c.id)}>🗑️ Delete</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {sel && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{maxWidth: '780px'}}>
+                <div className="modal-header">
+                  <h3 className="modal-title">QA Risk & RCA Summary (#{sel.id})</h3>
+                  <button className="modal-close-btn" onClick={() => setSel(null)}>×</button>
+                </div>
+                <div style={{maxHeight: '420px', overflowY: 'auto'}}>
+                  <p><strong>Product:</strong> {sel.product_name} ({sel.product_strength_grade})</p>
+                  <p><strong>Batch:</strong> {sel.batch_lot_number} | <strong>Customer:</strong> {sel.customer_name}</p>
+                  <p style={{margin: '12px 0'}}><strong>Description:</strong> {sel.detailed_description}</p>
+                  <div style={{background: '#FFE4E6', padding: '12px', borderRadius: '8px', margin: '12px 0', border: '1px solid #FECDD3'}}>
+                    <strong style={{color: '#BE123C'}}>ICH Q9 Quality Risk Assessment:</strong>
+                    <p style={{color: '#881337', marginTop: '4px'}}>{sel.risk_summary}</p>
+                  </div>
+                  <div style={{background: '#ECFDF5', padding: '12px', borderRadius: '8px', border: '1px solid #A7F3D0'}}>
+                    <strong style={{color: '#047857'}}>Suggested RCA & CAPA Action Items:</strong>
+                    <pre style={{whiteSpace: 'pre-wrap', fontSize: '12.5px', marginTop: '6px', color: '#065F46'}}>{sel.suggested_capa}</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('intake');
+      const [statusState, setStatusState] = useState(''); // '' | 'Saved' | 'Triaged'
+      const [groqKey, setGroqKey] = useState('');
+      const [progress, setProgress] = useState(10);
+      const [statusText, setStatusText] = useState('Upload a complaint document or paste text above. I will automatically extract the details and populate the form for you.');
+      const [messages, setMessages] = useState([{
+        sender: 'assistant',
+        content: 'Upload a complaint document or paste text above. I will automatically extract the details and populate the form for you.'
+      }]);
+      const [complaints, setComplaints] = useState([]);
+      const [formState, setFormState] = useState({
+        complaintSource: '', customerName: '', productName: '', productStrengthGrade: '',
+        batchLotNumber: '', manufacturingDate: '', expiryDate: '', quantityAffected: '',
+        complaintType: '', complaintDate: new Date().toISOString().split('T')[0],
+        detailedDescription: '', initialSeverity: '', priority: '', highlightedFields: {}
+      });
+
+      const resetForm = () => {
+        setFormState({
+          complaintSource: '', customerName: '', productName: '', productStrengthGrade: '',
+          batchLotNumber: '', manufacturingDate: '', expiryDate: '', quantityAffected: '',
+          complaintType: '', complaintDate: '', detailedDescription: '', initialSeverity: '',
+          priority: '', highlightedFields: {}
+        });
+        setProgress(10);
+        setStatusState('');
+        setStatusText("Upload a complaint document or paste text above.");
+      };
+
+      const loadComplaints = async () => {
+        try {
+          const res = await fetch('/api/complaints');
+          if (res.ok) {
+            const data = await res.json();
+            setComplaints(data.complaints || []);
+          }
+        } catch(e){}
+      };
+
+      useEffect(() => { loadComplaints(); }, []);
+
+      const handleDeleteComplaint = async (id) => {
+        if (!window.confirm(`Are you sure you want to delete Complaint #${id}?`)) return;
+        try {
+          const res = await fetch(`/api/complaints/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            await loadComplaints();
+          }
+        } catch(e){
+          alert("Error deleting complaint: " + e.message);
+        }
+      };
+
+      const runExtraction = async (endpoint, bodyData, isFile=false) => {
+        setProgress(35);
+        setStatusText("Analyzing document content and extracting key details... Please wait.");
+
+        const headers = {};
+        if (groqKey) headers['x-groq-api-key'] = groqKey;
+
+        let options = { method: 'POST', headers };
+        if (isFile) {
+          options.body = bodyData;
+        } else {
+          headers['Content-Type'] = 'application/json';
+          options.body = JSON.stringify(bodyData);
+        }
+
+        try {
+          const res = await fetch(endpoint, options);
+          if (!res.ok) throw new Error("Server response error");
+          const json = await res.json();
+          const d = json.data || {};
+
+          setProgress(100);
+          setStatusText("Extraction completed successfully! Key details populated in form.");
+          setStatusState("Triaged");
+
+          setFormState({
+            complaintSource: d.complaint_source || '',
+            customerName: d.customer_name || '',
+            productName: d.product_name || '',
+            productStrengthGrade: d.product_strength_grade || '',
+            batchLotNumber: d.batch_lot_number || '',
+            manufacturingDate: d.manufacturing_date || '',
+            expiryDate: d.expiry_date || '',
+            quantityAffected: d.quantity_affected || '',
+            complaintType: d.complaint_type || '',
+            complaintDate: d.complaint_date || '',
+            detailedDescription: d.detailed_description || '',
+            initialSeverity: d.initial_severity || 'Major',
+            priority: d.priority || 'Medium',
+            riskSummary: d.risk_summary || '',
+            suggestedCapa: d.suggested_capa || '',
+            highlightedFields: {
+              complaintSource: true, customerName: true, productName: true,
+              productStrengthGrade: true, batchLotNumber: true, manufacturingDate: true,
+              expiryDate: true, quantityAffected: true, complaintType: true,
+              complaintDate: true, detailedDescription: true, initialSeverity: true, priority: true
+            }
+          });
+
+          setMessages(prev => [...prev, {
+            sender: 'assistant',
+            content: `Extracted key details successfully!\n\nProduct: ${d.product_name || 'N/A'}\nBatch: ${d.batch_lot_number || 'N/A'}\nAssessed Severity: ${d.initial_severity || 'Major'}`
+          }]);
+
+        } catch (e) {
+          setProgress(0);
+          setStatusText("Extraction failed: " + e.message);
+        }
+      };
+
+      // Save Complaint & 10-Second Auto Reset Logic
+      const handleSave = async () => {
+        try {
+          const res = await fetch('/api/complaints', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              complaint_source: formState.complaintSource,
+              customer_name: formState.customerName,
+              product_name: formState.productName,
+              product_strength_grade: formState.productStrengthGrade,
+              batch_lot_number: formState.batchLotNumber,
+              manufacturing_date: formState.manufacturingDate,
+              expiry_date: formState.expiryDate,
+              quantity_affected: formState.quantityAffected,
+              complaint_type: formState.complaintType,
+              complaint_date: formState.complaintDate,
+              detailed_description: formState.detailedDescription,
+              initial_severity: formState.initialSeverity || 'Major',
+              priority: formState.priority || 'Medium',
+              status: 'Pending Triage',
+              risk_summary: formState.riskSummary,
+              suggested_capa: formState.suggestedCapa
+            })
+          });
+          if (res.ok) {
+            // Set status to 'Saved'
+            setStatusState("Saved");
+            loadComplaints();
+
+            // 10-second timer to reset status back to 'Start Triage' and clear form
+            setTimeout(() => {
+              resetForm();
+            }, 10000);
+          }
+        } catch(e){ alert("Save error: " + e.message); }
+      };
+
+      const handleChat = async (text) => {
+        setMessages(prev => [...prev, { sender: 'user', content: text }]);
+        try {
+          const res = await fetch('/api/intake/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: text,
+              complaint_data: formState,
+              chat_history: messages,
+              api_key: groqKey
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setMessages(prev => [...prev, { sender: 'assistant', content: data.reply }]);
+          }
+        } catch(e){}
+      };
+
+      const loadSampleAPI = () => {
+        runExtraction('/api/intake/text', {
+          text: `COMPLAINT REPORT - API QUALITY ASSURANCE\nDate: 2026-09-08\nFrom: Apex Pharmaceuticals Ltd (Quality Control Dept)\nCustomer Contact: Dr. Robert Vance (qc@apexpharma.com)\nProduct: Paracetamol (Acetaminophen) API\nGrade/Strength: Ph. Eur. / USP Micronized Grade 99.8%\nBatch/Lot Number: LOT-2026-X891\nMfg Date: 2026-01-15 | Expiry Date: 2028-01-14\nQuantity Affected: 500 kg (in 25 fiber drums)\n\nIncident Summary:\nDuring incoming receiving inspection and HPLC assay testing at our formulation facility, Lot-2026-X891 failed total related substances specification (OOS reported at 0.45% vs limit <= 0.15%). Additionally, 3 fiber drums showed damaged inner seals. Please initiate immediate QA investigation.`,
+          api_key: groqKey
+        });
+      };
+
+      const loadSampleFDF = () => {
+        runExtraction('/api/intake/text', {
+          text: `CUSTOMER COMPLAINT EMAIL - FINISHED DOSAGE FORM (FDF)\nDate: 2026-09-07\nFrom: Metro Central Hospital Pharmacy\nCustomer Contact: Sarah Jenkins, Chief Pharmacist (sjenkins@metrohospital.org)\nProduct Name: Amoxicillin Trihydrate 500mg Capsules\nBatch Number: BATCH-99412\nManufacturing Date: 2026-03-10 | Expiry Date: 2028-03-09\nQuantity Affected: 1,200 blister cards (12,000 capsules)\n\nDescription:\nHospital staff reported significant physical discoloration (dark yellow spots) on capsules from blister pack Lot BATCH-99412. Please log as high priority complaint and advise on replacement.`,
+          api_key: groqKey
+        });
+      };
+
+      return (
+        <div className="app-container">
+          <Header 
+            statusState={statusState} 
+            complaintSource={formState.complaintSource}
+            customerName={formState.customerName}
+            activeTab={activeTab} 
+            onTabChange={setActiveTab} 
+            groqApiKey={groqKey} 
+            onApiKeyChange={setGroqKey} 
+          />
+          {activeTab === 'intake' ? (
+            <div className="main-grid">
+              <ComplaintForm
+                formState={formState}
+                setFormState={setFormState}
+                onSaveComplaint={handleSave}
+                onResetForm={resetForm}
+                onLoadSampleAPI={loadSampleAPI}
+                onLoadSampleFDF={loadSampleFDF}
+              />
+              <AIAssistantPanel
+                progress={progress}
+                statusText={statusText}
+                messages={messages}
+                onFileUpload={(file) => {
+                  const fd = new FormData();
+                  fd.append('file', file);
+                  runExtraction('/api/intake/upload', fd, true);
+                }}
+                onTextSubmit={(text) => runExtraction('/api/intake/text', { text, api_key: groqKey })}
+                onSendChat={handleChat}
+              />
+            </div>
+          ) : (
+            <SavedComplaintsDashboard complaints={complaints} onDeleteComplaint={handleDeleteComplaint} />
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
